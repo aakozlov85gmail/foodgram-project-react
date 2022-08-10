@@ -130,3 +130,8 @@ dmypy.json
 
 # .idea
 .idea
+
+#директории и файлы разработки
+node_modules/
+.vscode
+
