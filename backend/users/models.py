@@ -5,8 +5,21 @@ from django.contrib.auth.models import AbstractUser
 
 class User(AbstractUser):
     """Абстрактная модель пользователя."""
-
-    pass
+    REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
+    email = models.EmailField(verbose_name='email пользователя',
+                              unique=True,
+                              error_messages={
+                                  'unique': "Пользователь с таким email уже существует.",
+                              },
+                              )
+    username = models.CharField(
+        verbose_name='имя пользователя',
+        max_length=150,
+        unique=True,
+        error_messages={
+            'unique': "Пользователь с таким именем уже существует.",
+        },
+    )
 
 
 class Subscription(models.Model):
