@@ -74,7 +74,7 @@ class Recipe(models.Model):
     image = models.ImageField(
         verbose_name='фото',
         upload_to='recipes/',
-        blank=True
+        blank=True,
     )
     name = models.CharField(
         max_length=200,
@@ -135,6 +135,7 @@ class Favorite(models.Model):
         Recipe,
         on_delete=models.CASCADE,
         verbose_name='Рецепт',
+        related_name='favorites',
     )
 
     class Meta:
