@@ -85,14 +85,13 @@ class Recipe(models.Model):
     )
     cooking_time = models.PositiveIntegerField(
         verbose_name='Время приготовления',
-        validators=MinValueValidator(
+        validators=[MinValueValidator(
             1,
-            message='Время приготовления не может быть меньше 1 минуты'
-        )
+            message='Время приготовления не может быть меньше 1 минуты')]
     )
 
     class Meta:
-        ordering = ('-id', )
+        ordering = ('-id',)
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
 
@@ -113,10 +112,9 @@ class IngredientRecipe(models.Model):
     )
     amount = models.PositiveIntegerField(
         verbose_name='Количество',
-        validators=MinValueValidator(
+        validators=[MinValueValidator(
             1,
-            message='Ингредиентов должно быть не менее 1 единицы'
-        )
+            message='Ингредиентов должно быть не менее 1 единицы')]
     )
 
     class Meta:
