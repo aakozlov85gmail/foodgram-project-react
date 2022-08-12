@@ -25,5 +25,7 @@ class SubscribtionAdmin(admin.ModelAdmin):
     search_fields = ('user',)
 
 
+
+
 admin.site.register(User, UserAdmin)
 admin.site.register(Subscription, SubscribtionAdmin)
