@@ -1,9 +1,11 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
 
 from .models import User, Subscription
 
 
-class UserAdmin(admin.ModelAdmin):
+@admin.register(User)
+class UserAdmin(UserAdmin):
     ordering = ('username',)
     list_display = (
         'username',
@@ -17,15 +19,10 @@ class UserAdmin(admin.ModelAdmin):
     )
 
 
+@admin.register(Subscription)
 class SubscribtionAdmin(admin.ModelAdmin):
     list_display = (
         'user',
         'author',
     )
     search_fields = ('user',)
-
-
-
-
-admin.site.register(User, UserAdmin)
-admin.site.register(Subscription, SubscribtionAdmin)

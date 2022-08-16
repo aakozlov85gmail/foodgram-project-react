@@ -15,6 +15,7 @@ class IngredientInline(admin.TabularInline):
     model = IngredientRecipe
 
 
+@admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     """Отображение модели Recipe в админке."""
     list_display = (
@@ -37,6 +38,7 @@ class RecipeAdmin(admin.ModelAdmin):
         return Favorite.objects.filter(recipe=obj).count()
 
 
+@admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
     """Отображение модели Tag в админке."""
     list_display = (
@@ -46,6 +48,7 @@ class TagAdmin(admin.ModelAdmin):
     )
 
 
+@admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
     """Отображение модели Ingredient в админке."""
     list_display = (
@@ -57,6 +60,7 @@ class IngredientAdmin(admin.ModelAdmin):
     )
 
 
+@admin.register(IngredientRecipe)
 class IngredientRecipeAdmin(admin.ModelAdmin):
     """Отображение модели IngredientRecipe в админке."""
     list_display = (
@@ -66,6 +70,7 @@ class IngredientRecipeAdmin(admin.ModelAdmin):
     )
 
 
+@admin.register(Favorite)
 class FavoriteAdmin(admin.ModelAdmin):
     """Отображение модели Favorite в админке."""
     list_display = (
@@ -75,6 +80,7 @@ class FavoriteAdmin(admin.ModelAdmin):
     search_fields = ('user',)
 
 
+@admin.register(ShoppingCart)
 class ShoppingCartAdmin(admin.ModelAdmin):
     """Отображение модели ShoppingCart в админке."""
     list_display = (
@@ -82,11 +88,3 @@ class ShoppingCartAdmin(admin.ModelAdmin):
         'recipe',
     )
     search_fields = ('user',)
-
-
-admin.site.register(Recipe, RecipeAdmin)
-admin.site.register(Tag, TagAdmin)
-admin.site.register(Ingredient, IngredientAdmin)
-admin.site.register(IngredientRecipe, IngredientRecipeAdmin)
-admin.site.register(Favorite, FavoriteAdmin)
-admin.site.register(ShoppingCart, ShoppingCartAdmin)
