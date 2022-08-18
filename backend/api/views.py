@@ -2,7 +2,12 @@ from rest_framework import viewsets
 from django_filters.rest_framework import DjangoFilterBackend
 
 from recipes.models import Tag, Ingredient, Recipe
-from .serializers import TagSerializer, IngredientSerializer, RecipeSerializer
+from .serializers import (
+    TagSerializer,
+    IngredientSerializer,
+    RecipeGetSerializer,
+    RecipeCreateModifySerializer,
+)
 from .filters import IngredientFilter, RecipeFilter
 
 
@@ -22,6 +27,11 @@ class IngredientViewSet(viewsets.ModelViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    serializer_class = RecipeSerializer
+    serializer_class = RecipeGetSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return RecipeGetSerializer
+        return RecipeCreateModifySerializer
