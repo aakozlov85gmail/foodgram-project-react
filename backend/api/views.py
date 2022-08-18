@@ -1,7 +1,9 @@
 from rest_framework import viewsets
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
-from recipes.models import Tag, Ingredient, Recipe
+from recipes.models import Tag, Ingredient, Recipe, ShoppingCart
 from .serializers import (
     TagSerializer,
     IngredientSerializer,
@@ -35,3 +37,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if self.request.method == 'GET':
             return RecipeGetSerializer
         return RecipeCreateModifySerializer
+
+    @action(detail=True)
+    def download_shopping_cart(self, request):
+        current_user = self.request.user
+        cart = ShoppingCart.objects.filter(user=current_user)
+        print(cart)
+        # serializer = self.get_serializer(cart, many=True)
