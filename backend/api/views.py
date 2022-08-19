@@ -10,16 +10,17 @@ from django.shortcuts import get_object_or_404
 
 from recipes.models import (
     Tag,
-                            Ingredient,
-                            Recipe,
-                            IngredientRecipe,
-                            ShoppingCart,
+    Ingredient,
+    Recipe,
+    IngredientRecipe,
+    ShoppingCart,
 )
 from .serializers import (
     TagSerializer,
     IngredientSerializer,
     RecipeGetSerializer,
     RecipeCreateModifySerializer,
+    ShoppingCartSerializer,
 )
 from .filters import IngredientFilter, RecipeFilter
 
@@ -71,17 +72,20 @@ class RecipeViewSet(viewsets.ModelViewSet):
             writer.writerow(item)
         return response
 
-        @action(detail=False, methods=['POST','DELETE'])
-        def shopping_cart(self, request, recipe_id):
-            current_user = self.request.user
-            if current_user.is_anonymous:
-                return Response(status=status.HTTP_401_UNAUTHORIZED)
-            recipe = get_object_or_404(Recipe, id=recipe_id)
-
-            if self.request.method=='POST':
-                ShoppingCart.
-
-
-
-
+    @action(detail=True, methods=['POST', 'DELETE'], url_path='shopping_cart')
+    def shopping_cart(self, request, pk):
+        current_user = self.request.user
+        if current_user.is_anonymous:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        recipe = get_object_or_404(Recipe, pk=pk)
+        if request.method == 'POST':
+            ShoppingCart.objects.create(user=current_user, recipe=recipe)
+            serializer = ShoppingCartSerializer(recipe)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if request.method == 'DELETE':
+            recipe_in_cart = ShoppingCart.objects.filter(user=current_user, recipe=recipe)
+            if not recipe_in_cart.exists():
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            recipe_in_cart.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 

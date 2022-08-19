@@ -234,3 +234,9 @@ class RecipeCreateModifySerializer(serializers.ModelSerializer):
         context = {'request': request}
         return RecipeGetSerializer(
             instance, context=context).data
+
+
+class ShoppingCartSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time', )
