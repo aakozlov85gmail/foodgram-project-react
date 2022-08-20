@@ -14,6 +14,7 @@ from recipes.models import (
     Recipe,
     IngredientRecipe,
     ShoppingCart,
+    Favorite,
 )
 from .serializers import (
     TagSerializer,
@@ -21,6 +22,7 @@ from .serializers import (
     RecipeGetSerializer,
     RecipeCreateModifySerializer,
     ShoppingCartSerializer,
+    FovoriteSerializer,
 )
 from .filters import IngredientFilter, RecipeFilter
 
@@ -89,3 +91,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
             recipe_in_cart.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
+    @action(detail=True, methods=['POST', 'DELETE'], url_path='favorite')
+    def favorite(self, request, pk):
+        current_user = self.request.user
+        if current_user.is_anonymous:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        recipe = get_object_or_404(Recipe, pk=pk)
+        if request.method == 'POST':
+            Favorite.objects.create(user=current_user, recipe=recipe)
+            serializer = FovoriteSerializer(recipe)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if request.method == 'DELETE':
+            recipe_in_favorite = Favorite.objects.filter(user=current_user, recipe=recipe)
+            if not recipe_in_favorite.exists():
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            recipe_in_favorite.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
