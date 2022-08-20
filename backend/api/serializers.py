@@ -3,7 +3,7 @@ from djoser.serializers import UserSerializer, UserCreateSerializer
 from drf_extra_fields.fields import Base64ImageField
 from django.shortcuts import get_object_or_404
 
-from    users.models import User, Subscription
+from users.models import User, Subscription
 from recipes.models import (Tag,
                             Ingredient,
                             Recipe,
@@ -75,18 +75,6 @@ class IngredientRecipeSerializer(serializers.ModelSerializer):
                   'measurement_unit',
                   'amount',
                   )
-
-
-# class IngredientRecipeCreateSerializer(serializers.ModelSerializer):
-#     # id = serializers.IntegerField(write_only=True)
-#     amount = serializers.IntegerField(write_only=True)
-
-#     class Meta:
-#         model = IngredientRecipe
-#         fields = (
-#             # 'id',
-#             'amount',
-#         )
 
 
 class RecipeGetSerializer(serializers.ModelSerializer):
@@ -242,7 +230,33 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'image', 'cooking_time',)
 
 
-class FovoriteSerializer(serializers.ModelSerializer):
+class FavoriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time',)
+
+
+class SubscriptionsRecipeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time',)
+
+class SubscriptionSerializer(CustomUserSerializer):
+    recipes = serializers.SerializerMethodField(read_only=True)
+    recipes_count = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = User
+        fields = ('email', 'id', 'username', 'first_name', 'last_name', 'is_subscribed', 'recipes', 'recipes_count')
+
+    def get_recipes(self, obj):
+        limit = self.context['request'].query_params.get('recipes_limit')
+        if limit is None:
+            recipes = obj.recipes.all()
+        else:
+            recipes = obj.recipes.all()[:int(limit)]
+        return SubscriptionsRecipeSerializer(recipes, many=True).data
+
+    def get_recipes_count(self, obj):
+        return (obj.recipes.count())
+

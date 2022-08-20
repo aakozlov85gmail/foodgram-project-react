@@ -1,12 +1,14 @@
 import csv
 
-from rest_framework import viewsets, status
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from django.http import HttpResponse
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404
+from djoser.views import UserViewSet
 
 from recipes.models import (
     Tag,
@@ -22,9 +24,32 @@ from .serializers import (
     RecipeGetSerializer,
     RecipeCreateModifySerializer,
     ShoppingCartSerializer,
-    FovoriteSerializer,
+    FavoriteSerializer,
+    CustomUserSerializer,
+    SubscriptionSerializer,
 )
 from .filters import IngredientFilter, RecipeFilter
+from users.models import User
+
+
+class CustomUserViewSet(UserViewSet):
+    queryset = User.objects.all()
+    serializer_class = CustomUserSerializer
+
+    @action(
+        detail=False,
+        permission_classes=(IsAuthenticated,),
+    )
+    def subscriptions(self, request):
+        user = request.user
+        queryset = User.objects.filter(following__user=user)
+        pages = self.paginate_queryset(queryset)
+        serializer = SubscriptionSerializer(
+            pages,
+            many=True,
+            context={'request': request}
+        )
+        return self.get_paginated_response(serializer.data)
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -52,7 +77,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeGetSerializer
         return RecipeCreateModifySerializer
 
-    @action(detail=False)
+    @action(detail=False, permission_classes=(IsAuthenticated,))
     def download_shopping_cart(self, request):
         current_user = self.request.user
         if current_user.is_anonymous:
@@ -64,7 +89,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ).annotate(ingredient_amount=Sum('amount')).values_list(
             'ingredient__name', 'ingredient_amount',
             'ingredient__measurement_unit',
-            )
+        )
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = ('attachment;'
                                            'filename="Shoppingcart.csv"')
@@ -74,36 +99,66 @@ class RecipeViewSet(viewsets.ModelViewSet):
             writer.writerow(item)
         return response
 
-    @action(detail=True, methods=['POST', 'DELETE'], url_path='shopping_cart')
+    @action(
+        detail=True,
+        methods=['POST', 'DELETE'],
+        permission_classes=(IsAuthenticated,)
+    )
     def shopping_cart(self, request, pk):
         current_user = self.request.user
         if current_user.is_anonymous:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
         recipe = get_object_or_404(Recipe, pk=pk)
+        recipe_in_cart = ShoppingCart.objects.filter(
+            user=current_user, recipe=recipe)
         if request.method == 'POST':
-            ShoppingCart.objects.create(user=current_user, recipe=recipe)
             serializer = ShoppingCartSerializer(recipe)
+            if recipe_in_cart.exists():
+                data = {
+                    'errors':
+                    'Этот рецепт уже добавлен в корзину покупок.'
+                }
+                return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
+            ShoppingCart.objects.create(user=current_user, recipe=recipe)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         if request.method == 'DELETE':
-            recipe_in_cart = ShoppingCart.objects.filter(user=current_user, recipe=recipe)
             if not recipe_in_cart.exists():
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+                data = {
+                    'errors':
+                    'Этого рецепта нет в корзине покупок пользователя.'
+                }
+                return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
             recipe_in_cart.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, methods=['POST', 'DELETE'], url_path='favorite')
+    @action(
+        detail=True,
+        methods=['POST', 'DELETE'],
+        permission_classes=(IsAuthenticated,)
+    )
     def favorite(self, request, pk):
         current_user = self.request.user
         if current_user.is_anonymous:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
         recipe = get_object_or_404(Recipe, pk=pk)
+        recipe_in_favorite = Favorite.objects.filter(
+            user=current_user, recipe=recipe)
         if request.method == 'POST':
+            serializer = FavoriteSerializer(recipe)
+            if recipe_in_favorite.exists():
+                data = {
+                    'errors':
+                    'Этот рецепт уже есть в избранном.'
+                }
+                return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
             Favorite.objects.create(user=current_user, recipe=recipe)
-            serializer = FovoriteSerializer(recipe)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         if request.method == 'DELETE':
-            recipe_in_favorite = Favorite.objects.filter(user=current_user, recipe=recipe)
             if not recipe_in_favorite.exists():
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+                data = {
+                    'errors':
+                    'Этого рецепта нет в избранном пользователя.'
+                }
+                return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
             recipe_in_favorite.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
