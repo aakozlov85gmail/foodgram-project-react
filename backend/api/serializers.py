@@ -86,7 +86,7 @@ class RecipeGetSerializer(serializers.ModelSerializer):
         source='ingredientrecipe_set',
         read_only=True,
     )
-    is_favorite = serializers.SerializerMethodField(read_only=True)
+    is_favorited = serializers.SerializerMethodField(read_only=True)
     is_in_shopping_cart = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
@@ -96,7 +96,7 @@ class RecipeGetSerializer(serializers.ModelSerializer):
             'tags',
             'author',
             'ingredients',
-            'is_favorite',
+            'is_favorited',
             'is_in_shopping_cart',
             'name',
             'image',
@@ -104,7 +104,7 @@ class RecipeGetSerializer(serializers.ModelSerializer):
             'cooking_time',
         ]
 
-    def get_is_favorite(self, obj):
+    def get_is_favorited(self, obj):
         current_user = self.context['request'].user
         if current_user.is_anonymous:
             return False
