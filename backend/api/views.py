@@ -60,7 +60,10 @@ class CustomUserViewSet(UserViewSet):
     def subscribe(self, request, id):
         current_user = self.request.user
         author = get_object_or_404(User, pk=id)
-        subscription = Subscription.objects.filter(user=current_user, author=author)
+        subscription = Subscription.objects.filter(
+            user=current_user,
+            author=author
+        )
         if request.method == 'POST':
             if subscription.exists():
                 data = {
@@ -75,7 +78,8 @@ class CustomUserViewSet(UserViewSet):
                 }
                 return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
             Subscription.objects.create(user=current_user, author=author)
-            serializer = SubscriptionSerializer(author, context={'request': request})
+            serializer = SubscriptionSerializer(
+                author, context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         if request.method == 'DELETE':
             if not subscription.exists():
@@ -86,6 +90,7 @@ class CustomUserViewSet(UserViewSet):
                 return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
             subscription.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
@@ -107,7 +112,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     permission_classes = (IsAuthorAdminOrReadOnly,)
     filterset_class = RecipeFilter
-    http_method_names = ['get','post','patch','delete']
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -116,7 +121,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, permission_classes=(IsAuthenticated,))
     def download_shopping_cart(self, request):
-        current_user = self.request.user
         ingredients = IngredientRecipe.objects.filter(
             recipe__shopping_cart__user=request.user
         ).values(

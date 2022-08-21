@@ -148,19 +148,23 @@ class RecipeCreateModifySerializer(serializers.ModelSerializer):
     def validate(self, data):
         ingredients = self.initial_data.get('ingredients')
         if not ingredients:
-            raise serializers.ValidationError(
+            raise serializers.ValidationError({
+                'ingredients':
                 'Необходимо добавить хотя бы 1 игредиент'
-            )
+            })
         for ingredient_item in ingredients:
             if ingredients.count(ingredient_item) > 1:
-                raise serializers.ValidationError(
+                raise serializers.ValidationError({
+                    'ingredients':
                     'Ингридиенты должны быть уникальными!'
-                )
+                })
 
             amount = ingredient_item.get('amount')
             if int(amount) <= 0:
-                raise serializers.ValidationError('Проверьте, что количество'
-                                                  'ингредиента больше нуля!')
+                raise serializers.ValidationError({
+                    'amount':
+                    'Проверьте, что количество ингредиента больше нуля!'
+                })
 
         tags = self.initial_data.get('tags')
         if not tags:
@@ -169,8 +173,9 @@ class RecipeCreateModifySerializer(serializers.ModelSerializer):
             })
         for tag in tags:
             if tags.count(tag) > 1:
-                raise serializers.ValidationError(
-                    'Тэги должны быть уникальными!')
+                raise serializers.ValidationError({
+                    'tags': 'Тэги должны быть уникальными!'
+                })
 
         cooking_time = self.initial_data.get('cooking_time')
         if int(cooking_time) <= 0:
@@ -241,13 +246,23 @@ class SubscriptionsRecipeSerializer(serializers.ModelSerializer):
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time',)
 
+
 class SubscriptionSerializer(CustomUserSerializer):
     recipes = serializers.SerializerMethodField(read_only=True)
     recipes_count = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = User
-        fields = ('email', 'id', 'username', 'first_name', 'last_name', 'is_subscribed', 'recipes', 'recipes_count')
+        fields = (
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed',
+            'recipes',
+            'recipes_count'
+        )
 
     def get_recipes(self, obj):
         limit = self.context['request'].query_params.get('recipes_limit')
