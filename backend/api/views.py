@@ -29,7 +29,7 @@ from .serializers import (
     SubscriptionSerializer,
 )
 from .filters import IngredientFilter, RecipeFilter
-from users.models import User
+from users.models import User, Subscription
 
 
 class CustomUserViewSet(UserViewSet):
@@ -51,6 +51,40 @@ class CustomUserViewSet(UserViewSet):
         )
         return self.get_paginated_response(serializer.data)
 
+    @action(
+        methods=['POST', 'DELETE'],
+        detail=True,
+        permission_classes=(IsAuthenticated,)
+    )
+    def subscribe(self, request, id):
+        current_user = self.request.user
+        author = get_object_or_404(User, pk=id)
+        subscription = Subscription.objects.filter(user=current_user, author=author)
+        if request.method == 'POST':
+            if subscription.exists():
+                data = {
+                    'errors':
+                        'Подписка на автора уже оформлена.'
+                }
+                return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
+            elif current_user == author:
+                data = {
+                    'errors':
+                        'Вы не можете подписаться на самого себя.'
+                }
+                return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
+            Subscription.objects.create(user=current_user, author=author)
+            serializer = SubscriptionSerializer(author, context={'request': request})
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if request.method == 'DELETE':
+            if not subscription.exists():
+                data = {
+                    'errors':
+                        'Такой подписки не существует.'
+                }
+                return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
+            subscription.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
