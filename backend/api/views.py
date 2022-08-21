@@ -29,6 +29,7 @@ from .serializers import (
     SubscriptionSerializer,
 )
 from .filters import IngredientFilter, RecipeFilter
+from .permissions import IsAuthorAdminOrReadOnly
 from users.models import User, Subscription
 
 
@@ -86,13 +87,13 @@ class CustomUserViewSet(UserViewSet):
             subscription.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-class TagViewSet(viewsets.ModelViewSet):
+class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     pagination_class = None
 
 
-class IngredientViewSet(viewsets.ModelViewSet):
+class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     pagination_class = None
@@ -104,7 +105,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeGetSerializer
     filter_backends = [DjangoFilterBackend]
+    permission_classes = (IsAuthorAdminOrReadOnly,)
     filterset_class = RecipeFilter
+    http_method_names = ['get','post','patch','delete']
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -114,8 +117,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=False, permission_classes=(IsAuthenticated,))
     def download_shopping_cart(self, request):
         current_user = self.request.user
-        if current_user.is_anonymous:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
         ingredients = IngredientRecipe.objects.filter(
             recipe__shopping_cart__user=request.user
         ).values(
@@ -140,8 +141,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def shopping_cart(self, request, pk):
         current_user = self.request.user
-        if current_user.is_anonymous:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
         recipe = get_object_or_404(Recipe, pk=pk)
         recipe_in_cart = ShoppingCart.objects.filter(
             user=current_user, recipe=recipe)
@@ -172,8 +171,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def favorite(self, request, pk):
         current_user = self.request.user
-        if current_user.is_anonymous:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
         recipe = get_object_or_404(Recipe, pk=pk)
         recipe_in_favorite = Favorite.objects.filter(
             user=current_user, recipe=recipe)
