@@ -111,8 +111,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def download_shopping_cart(self, request):
-        file = get_csv_shopping_cart(request)
-        return file
+        ingredient_recipe = IngredientRecipe.objects.filter(
+            recipe__shopping_cart__user=request.user
+        )
+        return get_csv_shopping_cart(ingredient_recipe)
 
     @action(
         detail=True,

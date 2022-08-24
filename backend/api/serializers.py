@@ -171,7 +171,7 @@ class RecipeCreateModifySerializer(serializers.ModelSerializer):
                 })
 
             amount = ingredient_item.get('amount')
-            if int(amount) <= 0:
+            if float(amount) <= 0:
                 raise serializers.ValidationError({
                     'amount':
                     'Проверьте, что количество ингредиента больше нуля!'
