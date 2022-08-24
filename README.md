@@ -1,4 +1,4 @@
-#Foodgram - сайт 'Продуктовый помощник'
+# Foodgram - сайт 'Продуктовый помощник'
 
 ------------
 
@@ -85,6 +85,6 @@ sudo docker compose exec backend python manage.py loaddata data.json
 
 ## Автор проекта
 
-Козлов Андрей :tw-1f1f7-1f1fa:
+Козлов Андрей
 студент 31 когорты факультета Python разработки
 Yandex Practicum
