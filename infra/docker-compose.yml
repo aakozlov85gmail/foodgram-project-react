@@ -15,7 +15,7 @@ services:
       - db
 
   backend:
-    build: ../backend/
+    image: aakozlov85/backend:latest
     restart: always
     volumes:
       - static_volume:/app/static/
