@@ -11,7 +11,6 @@ services:
     image: aakozlov85/frontend:latest
     volumes:
       - result_build:/app/result_build/build
-      - redoc:/app/api/docs/
     depends_on:
       - db
 
@@ -21,6 +20,7 @@ services:
     volumes:
       - static_volume:/app/static/
       - media_volume:/app/media/
+      - redoc:/app/api/docs/
     env_file:
       - ./.env
     depends_on:
