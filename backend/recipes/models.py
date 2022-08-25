@@ -119,7 +119,6 @@ class IngredientRecipe(models.Model):
             message='Ингредиентов должно быть больше нуля')]
     )
 
-
     class Meta:
         verbose_name = 'Количество ингредиента'
         verbose_name_plural = 'Количество ингредиентов'

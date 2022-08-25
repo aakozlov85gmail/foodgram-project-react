@@ -200,12 +200,12 @@ class RecipeCreateModifySerializer(serializers.ModelSerializer):
     def ingredients_creation(self, ingredients, recipe):
         IngredientRecipe.objects.bulk_create(
             [IngredientRecipe(
-                           ingredient=get_object_or_404(
-                               Ingredient,
-                               id=ingredient_item.get('id')
-                           ),
-                           recipe=recipe,
-                           amount=ingredient_item.get('amount')
+                ingredient=get_object_or_404(
+                    Ingredient,
+                    id=ingredient_item.get('id')
+                ),
+                recipe=recipe,
+                amount=ingredient_item.get('amount')
             ) for ingredient_item in ingredients]
         )
 

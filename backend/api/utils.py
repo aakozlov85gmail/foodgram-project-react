@@ -3,6 +3,7 @@ import csv
 from django.http.response import HttpResponse
 from django.db.models import Sum
 
+
 def get_csv_shopping_cart(ingredient_recipe):
     ingredients = ingredient_recipe.values(
         'ingredient__name', 'ingredient__measurement_unit'
