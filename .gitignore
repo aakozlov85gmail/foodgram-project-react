@@ -134,5 +134,4 @@ dmypy.json
 #директории и файлы разработки
 node_modules/
 .vscode
-media/
 static/
