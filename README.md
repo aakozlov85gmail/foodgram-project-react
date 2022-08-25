@@ -15,7 +15,6 @@
 - Nginx
 - Gunicorn
 - Docker
-
 ------------
 ## Установка и запуск проекта
 Выполните установку git, docker и docker-compose на сервере
