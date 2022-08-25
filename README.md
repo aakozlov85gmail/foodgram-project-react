@@ -21,7 +21,7 @@
 ## Установка и запуск проекта
 Выполните установку git, docker и docker-compose на сервере
 ```sh
-sudo apt install git docker-ce docker-compose -y
+sudo apt install git docker docker-compose -y
 ```
 Клонируйте репозиторий и перейдите в него в командной строке:
 ```sh
